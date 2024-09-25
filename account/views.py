@@ -21,6 +21,9 @@ from .models import UserData
 from rest_framework_simplejwt.views import TokenObtainPairView
 import environ
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 env = environ.Env(DEBUG=(bool, False))
 
@@ -28,6 +31,17 @@ env = environ.Env(DEBUG=(bool, False))
 @permission_classes([AllowAny])
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        # logger.debug(f"Request data: {request.data}")  # Log the incoming request data
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            # logger.error(f"Validation errors: {serializer.errors}")  # Log validation errors
+            return Response({}, status=status.HTTP_201_CREATED)
+        
+        return super().post(request, *args, **kwargs)
     
 
 @permission_classes([AllowAny])
